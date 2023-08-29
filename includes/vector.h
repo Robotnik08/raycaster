@@ -20,3 +20,9 @@ struct {
     float y;
     float z;
 } typedef Vector3;
+
+void normalize (Vector2 *v) {
+    float length = sqrt(v->x * v->x + v->y * v->y);
+    v->x /= length;
+    v->y /= length;
+}

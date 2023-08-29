@@ -1,30 +1,38 @@
 #include <SDL2/SDL.h>
 
-#define TOTAL_KEYS 256
-
-int keys[TOTAL_KEYS];
+int keys[SDL_NUM_SCANCODES];
+int keysJustDown[SDL_NUM_SCANCODES];
 
 void initializeInput()
 {
-    for (int i = 0; i < TOTAL_KEYS; i++)
+    for (int i = 0; i < SDL_NUM_SCANCODES; i++)
     {
         keys[i] = 0; // Initialize all keys as not pressed
     }
 }
 
-int checkInput(char in)
+int checkInput(SDL_Scancode in)
 {
     return keys[(int)in];
+}
+int checkInputDown(SDL_Scancode in)
+{
+    return keysJustDown[(int)in];
 }
 
 void setInput(SDL_Event *event)
 {
-    if (event->type == SDL_KEYDOWN)
+    if (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP)
     {
-        keys[event->key.keysym.sym] = 1; // Key pressed
+        if (event->key.keysym.scancode >= SDL_NUM_SCANCODES) return;
+        keys[event->key.keysym.scancode] = (event->type == SDL_KEYDOWN) ? 1 : 0;
+        keysJustDown[event->key.keysym.scancode] = (event->type == SDL_KEYDOWN) ? 1 : 0;
     }
-    else if (event->type == SDL_KEYUP)
+}
+void inputRefresh()
+{
+    for (int i = 0; i < SDL_NUM_SCANCODES; i++)
     {
-        keys[event->key.keysym.sym] = 0; // Key released
+        keysJustDown[i] = 0;
     }
 }
