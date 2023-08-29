@@ -1,5 +1,5 @@
 *.exe
 .vscode
 test.*
-## this is where the executable will be created, for the sake of the templeate, it is not ignored, should be ignored in real projects
-# build
+src
+build
