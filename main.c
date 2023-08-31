@@ -15,6 +15,7 @@
 #define EPSILON 0.0001F
 #define VERTICLE_SHADE 0.2F
 #define VERTICLE_SHADE_COLOR 0x000000
+#define WALL_HEIGHT 64
 
 struct {
     float distance;
@@ -48,19 +49,19 @@ SDL_Window* window = NULL;
 int windowWidth = 0;
 int windowHeight = 0;
 int playerSpeed = 200;
-int mode3D = 0;
+int mode3D = 1;
 int modeFishEye = 1;
 
 int map[] = {
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    2, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2,
-    2, 0, 3, 0, 0, 0, 3, 3, 3, 3, 3, 3, 0, 0, 0, 3, 0, 0, 3, 2,
-    2, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2,
-    2, 0, 3, 3, 3, 0, 3, 3, 3, 0, 0, 0, 3, 3, 3, 0, 3, 3, 3, 2,
+    2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2,
+    2, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 0, 0, 0, 3, 0, 0, 3, 2,
+    2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2,
+    2, 0, 3, 3, 3, 0, 3, 3, 3, 0, -1, 0, 3, 3, 3, 0, 3, 3, 3, 2,
     2, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 2,
     2, 0, 3, 0, 3, 3, 3, 0, 3, 0, 0, 0, 3, 0, 3, 3, 3, 0, 3, 2,
     2, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2,
-    2, 0, 3, 0, 3, 0, 3, 3, 3, 3, 0, 3, 3, 0, 3, 0, 3, 0, 3, 2,
+    2, 0, 3, 0, 3, 0, 3, 3, 0, 3, 0, 3, 3, 0, 3, 0, 3, 0, 3, 2,
     2, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 0, 0, 2,
     2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 3, 3, 3, 3, 3, 3, 2,
     2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 2,
@@ -91,8 +92,8 @@ int colors[] = {
     0x0000FF
 };
 int ceilingColor = 0x595959;
-int floorColor = 0x8B4513;
-int fogColor = 0xFFFFFF;
+int floorColor = 0xfffcd9;
+int fogColor = 0x000000;
 
 Vector2 position = {120, 120};
 float angle = 0;
@@ -144,12 +145,12 @@ int WinMain(int argc, char* argv[]) {
             SDL_SetWindowFullscreen(window, SDL_GetWindowFlags(window) ^ SDL_WINDOW_FULLSCREEN_DESKTOP);
         }
         movePlayer(deltaTime);
-        if (checkInputDown(SDL_SCANCODE_SPACE)) {
-            mode3D = !mode3D;
-        }
-        if (checkInputDown(SDL_SCANCODE_F) && mode3D) {
-            modeFishEye = !modeFishEye;
-        }
+        // if (checkInputDown(SDL_SCANCODE_SPACE)) {
+        //     mode3D = !mode3D;
+        // }
+        // if (checkInputDown(SDL_SCANCODE_F) && mode3D) {
+        //     modeFishEye = !modeFishEye;
+        // }
         if (mode3D) drawFrame3D(renderer);
         else drawFrame2D(renderer);
         inputRefresh();
@@ -171,22 +172,31 @@ void drawFrame3D(SDL_Renderer* renderer) {
     // clear the screen
     SDL_SetRenderDrawColor(renderer, 0, 100, 0, 255);
     SDL_RenderClear(renderer);
+    int start = windowWidth/2 - windowHeight/2;
+    int end = windowWidth/2 + windowHeight/2;
 
     //draw floor and ceiling
-    SDL_SetRenderDrawColor(renderer, getRed(ceilingColor), getGreen(ceilingColor), getBlue(ceilingColor), 255);
-    SDL_Rect ceilRect = {0, 0, windowWidth, windowHeight/2};
-    SDL_RenderFillRect(renderer, &ceilRect);
-    SDL_SetRenderDrawColor(renderer, getRed(floorColor), getGreen(floorColor), getBlue(floorColor), 255);
-    ceilRect = (SDL_Rect){0, windowHeight/2, windowWidth, windowHeight/2};
-    SDL_RenderFillRect(renderer, &ceilRect);
+    for (int i = 0; i < windowHeight/2; i++) {
+        float shade = ((float)i / (float)(windowHeight/2.0F));
+        int color = blendColor(ceilingColor, fogColor, shade);
+        SDL_SetRenderDrawColor(renderer, getRed(color), getGreen(color), getBlue(color), 255);
+        SDL_Rect rect = {start, i, windowWidth, 1};
+        SDL_RenderFillRect(renderer, &rect);
+
+        color = blendColor(floorColor, fogColor, shade);
+        SDL_SetRenderDrawColor(renderer, getRed(color), getGreen(color), getBlue(color), 255);
+        rect = (SDL_Rect){start, windowHeight - i, windowWidth, 1};
+        SDL_RenderFillRect(renderer, &rect);
+    }
+
 
     //raycasting
     for (int i = 0; i < windowHeight; i++) {
         float a = toRadians(correctAngle(angle - FOV/2.0F + FOV * (float)i / (float)windowHeight));
         RaycastResult ray = castRayDistance(a, position);
         if (modeFishEye) fixFishEye(&ray.distance, a, toRadians(angle));
-        float lineHeight = ((float)(RENDER_DISTANCE*CELL_SIZE) / ray.distance) * 100.0F;
-        float shade = ray.distance / (float)(RENDER_DISTANCE*CELL_SIZE);
+        float lineHeight = (float)(RENDER_DISTANCE*CELL_SIZE) / ray.distance;
+        float shade = ray.distance * WALL_HEIGHT / (float)(RENDER_DISTANCE*CELL_SIZE);
         int color = 0xFFFFFF;
         if (getWallType(ray.wallType) > 0) {
             color = colors[getWallType(ray.wallType)];
@@ -207,9 +217,9 @@ void drawFrame3D(SDL_Renderer* renderer) {
 
     // draw black on both sides
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_Rect rect = {0, 0, windowWidth/2 - windowHeight/2, windowHeight};
+    SDL_Rect rect = {0, 0, start, windowHeight};
     SDL_RenderFillRect(renderer, &rect);
-    rect = (SDL_Rect){windowWidth/2 + windowHeight/2, 0, windowWidth/2 - windowHeight/2, windowHeight};
+    rect = (SDL_Rect){end, 0, windowWidth, windowHeight};
     SDL_RenderFillRect(renderer, &rect);
 
 
@@ -247,7 +257,6 @@ void drawFrame2D(SDL_Renderer* renderer) {
     for (int i = 0; i < windowWidth; i++) {
         float a = toRadians(correctAngle(angle - FOV/2.0F + FOV * (float)i / (float)windowWidth));
         RaycastResult ray = castRayDistance(a, position);
-        fixFishEye(&ray.distance, a, toRadians(angle));
         Vector2 endLoc = {position.x + cos(a) * ray.distance, position.y + sin(a) * ray.distance};
         SDL_RenderDrawLine(renderer, position.x, position.y, endLoc.x, endLoc.y);
     }
@@ -387,5 +396,5 @@ void fixFishEye (float* distance, float rayAngle, float camAngle) {
     float combinedAngle = rayAngle - camAngle;
     if (combinedAngle < 0) combinedAngle += 2*PI;
     else if (combinedAngle > 2*PI) combinedAngle -= 2*PI;
-    *distance *= cos(combinedAngle);
+    *distance *= cos(combinedAngle)/(WALL_HEIGHT*(windowHeight/1000.0F));
 }
