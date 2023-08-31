@@ -28,7 +28,3 @@ void normalize (Vector2 *v) {
 float toAngle (Vector2 *v) {
     return atan2(v->y, v->x);
 }
-
-struct {
-    char *name;
-} typedef Test;
