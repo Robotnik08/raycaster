@@ -13,7 +13,6 @@
 #define RENDER_DISTANCE 10
 #define FOV 60
 #define EPSILON 0.0001F
-#define DRAW_RESOLUTION 60
 #define VERTICLE_SHADE 0.2F
 #define VERTICLE_SHADE_COLOR 0x000000
 
@@ -248,7 +247,7 @@ void drawFrame2D(SDL_Renderer* renderer) {
     for (int i = 0; i < windowWidth; i++) {
         float a = toRadians(correctAngle(angle - FOV/2.0F + FOV * (float)i / (float)windowWidth));
         RaycastResult ray = castRayDistance(a, position);
-
+        fixFishEye(&ray.distance, a, toRadians(angle));
         Vector2 endLoc = {position.x + cos(a) * ray.distance, position.y + sin(a) * ray.distance};
         SDL_RenderDrawLine(renderer, position.x, position.y, endLoc.x, endLoc.y);
     }
@@ -385,5 +384,8 @@ float toRadians (float degrees) {
     return degrees * PI / 180.0F;
 }
 void fixFishEye (float* distance, float rayAngle, float camAngle) {
-    *distance *= cos((rayAngle - camAngle));
+    float combinedAngle = rayAngle - camAngle;
+    if (combinedAngle < 0) combinedAngle += 2*PI;
+    else if (combinedAngle > 2*PI) combinedAngle -= 2*PI;
+    *distance *= cos(combinedAngle);
 }
