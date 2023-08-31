@@ -1,4 +1,3 @@
-
 struct {
     int x;
     int y;
@@ -26,3 +25,10 @@ void normalize (Vector2 *v) {
     v->x /= length;
     v->y /= length;
 }
+float toAngle (Vector2 *v) {
+    return atan2(v->y, v->x);
+}
+
+struct {
+    char *name;
+} typedef Test;
