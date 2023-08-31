@@ -4,3 +4,4 @@ test.*
 .vscode
 src
 build
+!Slome3D.zip
