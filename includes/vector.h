@@ -1,3 +1,7 @@
+#ifndef VECTOR_H
+#define VECTOR_H
+
+// structs
 struct {
     int x;
     int y;
@@ -20,6 +24,11 @@ struct {
     float z;
 } typedef Vector3;
 
+// forward declarations
+void normalize (Vector2 *v);
+float toAngle (Vector2 *v);
+
+// functions
 void normalize (Vector2 *v) {
     float length = sqrt(v->x * v->x + v->y * v->y);
     v->x /= length;
@@ -28,3 +37,5 @@ void normalize (Vector2 *v) {
 float toAngle (Vector2 *v) {
     return atan2(v->y, v->x);
 }
+
+#endif

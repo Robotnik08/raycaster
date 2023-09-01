@@ -1,3 +1,6 @@
+#ifndef COLOR_H
+#define COLOR_H
+
 #include <time.h>
 
 int getRed (int c) {
@@ -34,3 +37,5 @@ int blendColor (int c1, int c2, float amount) {
     int b = (int)(b1 * (1 - amount) + b2 * amount);
     return assembleColor(r, g, b);
 }
+
+#endif

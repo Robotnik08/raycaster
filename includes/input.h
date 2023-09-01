@@ -1,3 +1,6 @@
+#ifndef INPUT_H
+#define INPUT_H
+
 #include <SDL2/SDL.h>
 
 int keys[SDL_NUM_SCANCODES];
@@ -36,3 +39,5 @@ void inputRefresh()
         keysJustDown[i] = 0;
     }
 }
+
+#endif

@@ -1,49 +1,20 @@
+// C and libs
 #include <stdio.h>
 #include <SDL2/SDL.h>
 #include <math.h>
+
+// my headers
+#include "includes/constants.h"
+#include "includes/raycaster.h"
 #include "includes/vector.h"
 #include "includes/input.h"
 #include "includes/color.h"
 #include "includes/gametime.h"
 
-#define PI 3.14159265359F
-#define HALF_PI PI/2.0F
-#define ONE_HALF_PI 3*PI/2.0F
-#define CELL_SIZE 64
-#define RENDER_DISTANCE 10
-#define FOV 60
-#define EPSILON 0.0001F
-#define VERTICLE_SHADE 0.2F
-#define VERTICLE_SHADE_COLOR 0x000000
-#define WALL_HEIGHT 64
-
-struct {
-    float distance;
-    int wallType;
-} typedef RaycastResult;
-
-// function declarations
-void drawFrame2D(SDL_Renderer *renderer);
-void drawFrame3D(SDL_Renderer *renderer);
+// forward declarations
+void drawFrame(SDL_Renderer *renderer);
 void movePlayer(float dt);
 float toRadians (float degrees);
-void fixFishEye (float* distance, float rayAngle, float camAngle);
-RaycastResult castRayDistance (float a, Vector2 pos);
-float correctAngle (float a) {
-    if (a > 360) {
-        a -= 360;
-    }
-    else if (a < 0) {
-        a += 360;
-    }
-    return a;
-}
-int getWallType (int i) {
-    return i >> 1;
-}
-int getWallSide (int i) {
-    return i & 1;
-}
 // window
 SDL_Window* window = NULL;
 int windowWidth = 0;
@@ -51,39 +22,6 @@ int windowHeight = 0;
 int playerSpeed = 200;
 int mode3D = 1;
 int modeFishEye = 1;
-
-int map[] = {
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2,
-    2, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 0, 0, 0, 3, 0, 0, 3, 2,
-    2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2,
-    2, 0, 3, 3, 3, 0, 3, 3, 3, 0, -1, 0, 3, 3, 3, 0, 3, 3, 3, 2,
-    2, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 2,
-    2, 0, 3, 0, 3, 3, 3, 0, 3, 0, 0, 0, 3, 0, 3, 3, 3, 0, 3, 2,
-    2, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2,
-    2, 0, 3, 0, 3, 0, 3, 3, 0, 3, 0, 3, 3, 0, 3, 0, 3, 0, 3, 2,
-    2, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 0, 0, 2,
-    2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 3, 3, 3, 3, 3, 3, 2,
-    2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 2,
-    2, 0, 3, 0, 3, 3, 3, 0, 3, 0, -1, 0, 3, 0, 3, 3, 3, 0, 3, 2,
-    2, 0, 0, 0, 0, 0, 3, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 2,
-    2, 0, 3, 3, 3, 0, 3, 3, 3, 3, -1, 3, 0, 0, 0, 3, 0, 0, 3, 2,
-    2, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2,
-    2, 0, 3, 0, 0, 0, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2,
-    2, 0, 0, 0, 3, 3, 3, 0, 0, 3, 0, 0, 0, 0, 3, 3, 3, 0, 0, 2,
-    2, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 0, 0, 2,
-    2, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 0, 0, 2,
-    2, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 0, 0, 2,
-    2, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 2,
-    2, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2,
-    2, 0, 3, 0, 3, 3, 3, 0, 3, 3, 3, 3, 3, 3, 0, 3, 3, 0, 0, 2,
-    2, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, -1, -1, -1, -1, 0, 0, 0, 0, 2,
-    2, 0, 3, 0, 3, 0, 3, 3, 3, 3, 0, -1, -1, -1, -1, 3, 0, 3, 0, 2,
-    2, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, -1, -1, -1, -1, 0, 0, 0, 0, 2,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
-};
-int MAP_WIDTH = 20;
-int MAP_HEIGHT = 28;
 int colors[] = {
     0x000000,
     0xFFFFFF,
@@ -145,14 +83,7 @@ int WinMain(int argc, char* argv[]) {
             SDL_SetWindowFullscreen(window, SDL_GetWindowFlags(window) ^ SDL_WINDOW_FULLSCREEN_DESKTOP);
         }
         movePlayer(deltaTime);
-        // if (checkInputDown(SDL_SCANCODE_SPACE)) {
-        //     mode3D = !mode3D;
-        // }
-        // if (checkInputDown(SDL_SCANCODE_F) && mode3D) {
-        //     modeFishEye = !modeFishEye;
-        // }
-        if (mode3D) drawFrame3D(renderer);
-        else drawFrame2D(renderer);
+        drawFrame(renderer);
         inputRefresh();
         updateTime();
 
@@ -168,7 +99,7 @@ int WinMain(int argc, char* argv[]) {
     SDL_Quit();
     return 0;
 }
-void drawFrame3D(SDL_Renderer* renderer) {
+void drawFrame(SDL_Renderer* renderer) {
     // clear the screen
     SDL_SetRenderDrawColor(renderer, 0, 100, 0, 255);
     SDL_RenderClear(renderer);
@@ -194,7 +125,7 @@ void drawFrame3D(SDL_Renderer* renderer) {
     for (int i = 0; i < windowHeight; i++) {
         float a = toRadians(correctAngle(angle - FOV/2.0F + FOV * (float)i / (float)windowHeight));
         RaycastResult ray = castRayDistance(a, position);
-        if (modeFishEye) fixFishEye(&ray.distance, a, toRadians(angle));
+        if (modeFishEye) fixFishEye(&ray.distance, a, toRadians(angle), windowHeight);
         float lineHeight = (float)(RENDER_DISTANCE*CELL_SIZE) / ray.distance;
         float shade = ray.distance * WALL_HEIGHT / (float)(RENDER_DISTANCE*CELL_SIZE);
         int color = 0xFFFFFF;
@@ -221,147 +152,7 @@ void drawFrame3D(SDL_Renderer* renderer) {
     SDL_RenderFillRect(renderer, &rect);
     rect = (SDL_Rect){end, 0, windowWidth, windowHeight};
     SDL_RenderFillRect(renderer, &rect);
-
-
 }
-void drawFrame2D(SDL_Renderer* renderer) {
-    // clear the screen
-    SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
-    SDL_RenderClear(renderer);
-    
-    for (int i = 0; i < MAP_HEIGHT * MAP_WIDTH; i++) {
-        int x = i % MAP_WIDTH;
-        int y = i / MAP_WIDTH;
-        int color = 0x000000;
-        if (map[i] > 0) {
-            color = colors[map[i]];
-        } else {
-            switch (map[i])
-            {
-                case -1:
-                    color = rainbow(1);
-                    break;
-            }
-        }
-        SDL_SetRenderDrawColor(renderer, getRed(color), getGreen(color), getBlue(color), 255);
-        SDL_Rect rect = {x * CELL_SIZE + 2, y * CELL_SIZE + 2, CELL_SIZE - 4, CELL_SIZE - 4};
-        SDL_RenderFillRect(renderer, &rect);
-        //render number of cell (with squares from light to dark)
-        SDL_SetRenderDrawColor(renderer, 255 - i*2.55F, 255 - i*2.55F, 255 - i*2.55F, 255);
-        SDL_Rect rect2 = {x * CELL_SIZE + 16, y * CELL_SIZE + 16, 32, 32};
-        SDL_RenderFillRect(renderer, &rect2);
-    }
-    SDL_SetRenderDrawColor(renderer, getRed(rainbow(1)), getGreen(rainbow(1)), getBlue(rainbow(1)), 255);
-    SDL_Rect rect = {position.x - 16, position.y - 16, 32, 32};
-    SDL_RenderFillRect(renderer, &rect);
-    for (int i = 0; i < windowWidth; i++) {
-        float a = toRadians(correctAngle(angle - FOV/2.0F + FOV * (float)i / (float)windowWidth));
-        RaycastResult ray = castRayDistance(a, position);
-        Vector2 endLoc = {position.x + cos(a) * ray.distance, position.y + sin(a) * ray.distance};
-        SDL_RenderDrawLine(renderer, position.x, position.y, endLoc.x, endLoc.y);
-    }
-
-    // draw view ray
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_RenderDrawLine(renderer, position.x, position.y, position.x + cos(toRadians(angle)) * 100, position.y + sin(toRadians(angle)) * 100);
-}
-RaycastResult castRayDistance (float a, Vector2 pos) {
-    RaycastResult result;
-    float rayAngle = a;
-    Vector2 rayPos = pos;
-    Vector2 offset = {0, 0};
-    int depth = 0;
-
-    //horizontal
-    float angleTan = -1/tan(rayAngle);
-    float horizontalDistance = RENDER_DISTANCE*CELL_SIZE;
-    int horizontalWallHit = 0;
-    if (rayAngle > PI) {
-        rayPos.y = (((int)pos.y >> 6) << 6) - 0.0001F;
-        rayPos.x = (pos.y - rayPos.y) * angleTan + pos.x;
-        offset.y = -64;
-        offset.x = -offset.y * angleTan;
-    } else if (rayAngle < PI) {
-        rayPos.y = (((int)pos.y >> 6) << 6) + 64;
-        rayPos.x = (pos.y - rayPos.y) * angleTan + pos.x;
-        offset.y = 64;
-        offset.x = -offset.y * angleTan;
-    }
-    else if (fabs(rayAngle - PI) < EPSILON || fabs(rayAngle) < EPSILON) {
-        rayPos.y = pos.y;
-        rayPos.x = pos.x;
-        offset.y = 0;
-        offset.x = 0;
-        depth = RENDER_DISTANCE;
-    }
-    while (depth < RENDER_DISTANCE) {
-        int mapX = (int)rayPos.x >> 6;
-        int mapY = (int)rayPos.y >> 6;
-        int mapIndex = mapY * MAP_WIDTH + mapX;
-        if (mapIndex < 0 || mapIndex >= MAP_WIDTH * MAP_HEIGHT || mapX < 0 || mapX >= MAP_WIDTH || mapY < 0 || mapY >= MAP_HEIGHT) {
-            break;
-        }
-        if (map[mapIndex]) {
-            horizontalDistance = sqrt(pow(pos.x - rayPos.x, 2) + pow(pos.y - rayPos.y, 2));
-            horizontalDistance = fmin(horizontalDistance, RENDER_DISTANCE*CELL_SIZE);
-            horizontalWallHit = map[mapIndex] << 1;
-            break;
-        }
-        rayPos.x += offset.x;
-        rayPos.y += offset.y;
-        depth++;
-    }
-    //vertical
-    depth = 0;
-    float verticalDistance = RENDER_DISTANCE*CELL_SIZE;
-    float negativeAngleTan = -tan(rayAngle);
-    int verticalWallHit = 0;
-    if (rayAngle > HALF_PI && rayAngle < ONE_HALF_PI) {
-        rayPos.x = (((int)pos.x >> 6) << 6) - 0.0001F;
-        rayPos.y = (pos.x - rayPos.x) * negativeAngleTan + pos.y;
-        offset.x = -64;
-        offset.y = -offset.x * negativeAngleTan;
-    } else if (rayAngle < HALF_PI || rayAngle > ONE_HALF_PI) {
-        rayPos.x = (((int)pos.x >> 6) << 6) + 64;
-        rayPos.y = (pos.x - rayPos.x) * negativeAngleTan + pos.y;
-        offset.x = 64;
-        offset.y = -offset.x * negativeAngleTan;
-    }
-    else if (fabs(rayAngle - PI) < EPSILON || fabs(rayAngle) < EPSILON) {
-        rayPos.y = pos.y;
-        rayPos.x = pos.x;
-        offset.y = 0;
-        offset.x = 0;
-        depth = RENDER_DISTANCE;
-    }
-    while (depth < RENDER_DISTANCE) {
-        int mapX = (int)rayPos.x >> 6;
-        int mapY = (int)rayPos.y >> 6;
-        int mapIndex = mapY * MAP_WIDTH + mapX;
-        if (mapIndex < 0 || mapIndex >= MAP_WIDTH * MAP_HEIGHT || mapX < 0 || mapX >= MAP_WIDTH || mapY < 0 || mapY >= MAP_HEIGHT) {
-            break;
-        }
-        if (map[mapIndex]) {
-            verticalDistance = sqrt(pow(pos.x - rayPos.x, 2) + pow(pos.y - rayPos.y, 2));
-            verticalDistance = fmin(verticalDistance, RENDER_DISTANCE*CELL_SIZE);
-            verticalWallHit = map[mapIndex] << 1 | 1;
-            break;
-        }
-        rayPos.x += offset.x;
-        rayPos.y += offset.y;
-        depth++;
-    }
-    if (horizontalDistance < verticalDistance) {
-        result.distance = horizontalDistance;
-        result.wallType = horizontalWallHit;
-    }
-    else {
-        result.distance = verticalDistance;
-        result.wallType = verticalWallHit;
-    }
-    return result;
-}
-
 void movePlayer (float dt) {
     if (checkInput(SDL_SCANCODE_W)) {
         position.x += cos(toRadians(angle)) * playerSpeed * dt;
@@ -391,10 +182,4 @@ void movePlayer (float dt) {
 
 float toRadians (float degrees) {
     return degrees * PI / 180.0F;
-}
-void fixFishEye (float* distance, float rayAngle, float camAngle) {
-    float combinedAngle = rayAngle - camAngle;
-    if (combinedAngle < 0) combinedAngle += 2*PI;
-    else if (combinedAngle > 2*PI) combinedAngle -= 2*PI;
-    *distance *= cos(combinedAngle)/(WALL_HEIGHT*(windowHeight/1000.0F));
 }
