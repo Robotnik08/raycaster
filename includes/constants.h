@@ -11,10 +11,10 @@
 
 //raycaster
 #define CELL_SIZE 64
-#define RENDER_DISTANCE 10
+#define RENDER_DISTANCE 40
 #define FOV 60
 #define VERTICLE_SHADE 0.2F
 #define VERTICLE_SHADE_COLOR 0x000000
-#define WALL_HEIGHT 64
+#define WALL_HEIGHT 20
 
 #endif

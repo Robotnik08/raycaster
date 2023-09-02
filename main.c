@@ -37,6 +37,9 @@ Vector2 position = {120, 120};
 float angle = 0;
 
 int WinMain(int argc, char* argv[]) {
+
+
+
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         printf("Failed to initialize SDL: %s\n", SDL_GetError());
         return 1;
@@ -128,7 +131,7 @@ void drawFrame(SDL_Renderer* renderer) {
         if (modeFishEye) fixFishEye(&ray.distance, a, toRadians(angle), windowHeight);
         float lineHeight = (float)(RENDER_DISTANCE*CELL_SIZE) / ray.distance;
         float shade = ray.distance * WALL_HEIGHT / (float)(RENDER_DISTANCE*CELL_SIZE);
-        int color = 0xFFFFFF;
+        int color = 0x000000;
         if (getWallType(ray.wallType) > 0) {
             color = colors[getWallType(ray.wallType)];
         } else {

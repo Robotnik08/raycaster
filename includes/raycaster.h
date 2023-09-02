@@ -25,6 +25,7 @@ int getWallSide (int i);
 // functions
 
 RaycastResult castRayDistance (float a, Vector2 pos) {
+    Vector2 mapSize = getMapSize();
     RaycastResult result;
     float rayAngle = a;
     Vector2 rayPos = pos;
@@ -53,17 +54,17 @@ RaycastResult castRayDistance (float a, Vector2 pos) {
         offset.x = 0;
         depth = RENDER_DISTANCE;
     }
-    while (depth < RENDER_DISTANCE) {
+    while (depth < RENDER_DISTANCE+3) {
         int mapX = (int)rayPos.x >> 6;
         int mapY = (int)rayPos.y >> 6;
-        int mapIndex = mapY * MAP_WIDTH + mapX;
-        if (mapIndex < 0 || mapIndex >= MAP_WIDTH * MAP_HEIGHT || mapX < 0 || mapX >= MAP_WIDTH || mapY < 0 || mapY >= MAP_HEIGHT) {
+        int mapIndex = mapY * mapSize.x + mapX;
+        if (mapIndex < 0 || mapIndex >= mapSize.x * mapSize.y || mapX < 0 || mapX >= mapSize.x || mapY < 0 || mapY >= mapSize.y) {
             break;
         }
-        if (map[mapIndex]) {
+        if (c_map[mapIndex]) {
             horizontalDistance = sqrt(pow(pos.x - rayPos.x, 2) + pow(pos.y - rayPos.y, 2));
             horizontalDistance = fmin(horizontalDistance, RENDER_DISTANCE*CELL_SIZE);
-            horizontalWallHit = map[mapIndex] << 1;
+            horizontalWallHit = c_map[mapIndex] << 1;
             break;
         }
         rayPos.x += offset.x;
@@ -93,17 +94,17 @@ RaycastResult castRayDistance (float a, Vector2 pos) {
         offset.x = 0;
         depth = RENDER_DISTANCE;
     }
-    while (depth < RENDER_DISTANCE) {
+    while (depth < RENDER_DISTANCE+3) {
         int mapX = (int)rayPos.x >> 6;
         int mapY = (int)rayPos.y >> 6;
-        int mapIndex = mapY * MAP_WIDTH + mapX;
-        if (mapIndex < 0 || mapIndex >= MAP_WIDTH * MAP_HEIGHT || mapX < 0 || mapX >= MAP_WIDTH || mapY < 0 || mapY >= MAP_HEIGHT) {
+        int mapIndex = mapY * mapSize.x + mapX;
+        if (mapIndex < 0 || mapIndex >= mapSize.x * mapSize.y || mapX < 0 || mapX >= mapSize.x || mapY < 0 || mapY >= mapSize.y) {
             break;
         }
-        if (map[mapIndex]) {
+        if (c_map[mapIndex]) {
             verticalDistance = sqrt(pow(pos.x - rayPos.x, 2) + pow(pos.y - rayPos.y, 2));
             verticalDistance = fmin(verticalDistance, RENDER_DISTANCE*CELL_SIZE);
-            verticalWallHit = map[mapIndex] << 1 | 1;
+            verticalWallHit = c_map[mapIndex] << 1 | 1;
             break;
         }
         rayPos.x += offset.x;
