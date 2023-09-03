@@ -3,8 +3,8 @@
 
 #include <time.h>
 
-float deltaTime = 0.0F;
-float lastFrame = 0.0F;
+double deltaTime = 0.0F;
+double lastFrame = 0.0F;
 int framesThisSecond = 0;
 int FPS = 0;
 int lastFrameTimeSecond;

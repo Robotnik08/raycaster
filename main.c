@@ -13,15 +13,15 @@
 
 // forward declarations
 void drawFrame(SDL_Renderer *renderer);
-void movePlayer(float dt);
-float toRadians (float degrees);
+void movePlayer(double dt);
+double toRadians (double degrees);
 // window
 SDL_Window* window = NULL;
 int windowWidth = 0;
 int windowHeight = 0;
-int playerSpeed = 200;
-int mode3D = 1;
-int modeFishEye = 1;
+
+
+// colors
 int colors[] = {
     0x000000,
     0xFFFFFF,
@@ -33,13 +33,12 @@ int ceilingColor = 0x595959;
 int floorColor = 0xfffcd9;
 int fogColor = 0x000000;
 
+// player
+int playerSpeed = 200;
 Vector2 position = {120, 120};
-float angle = 0;
+double angle = 0;
 
 int WinMain(int argc, char* argv[]) {
-
-
-
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         printf("Failed to initialize SDL: %s\n", SDL_GetError());
         return 1;
@@ -91,7 +90,7 @@ int WinMain(int argc, char* argv[]) {
         updateTime();
 
         char* title = malloc(sizeof(char)*30);
-        sprintf(title, "Slome 3d | %i FPS", FPS);
+        sprintf(title, "Slome 3d | %i FPS | X: %i | Y: %i", FPS, (int)position.x / CELL_SIZE, (int)position.y / CELL_SIZE);
         //set window title
         SDL_SetWindowTitle(window, title);
         free(title);
@@ -111,7 +110,7 @@ void drawFrame(SDL_Renderer* renderer) {
 
     //draw floor and ceiling
     for (int i = 0; i < windowHeight/2; i++) {
-        float shade = ((float)i / (float)(windowHeight/2.0F));
+        double shade = ((double)i / (double)(windowHeight/2.0));
         int color = blendColor(ceilingColor, fogColor, shade);
         SDL_SetRenderDrawColor(renderer, getRed(color), getGreen(color), getBlue(color), 255);
         SDL_Rect rect = {start, i, windowWidth, 1};
@@ -126,11 +125,11 @@ void drawFrame(SDL_Renderer* renderer) {
 
     //raycasting
     for (int i = 0; i < windowHeight; i++) {
-        float a = toRadians(correctAngle(angle - FOV/2.0F + FOV * (float)i / (float)windowHeight));
+        double a = toRadians(correctAngle(angle - FOV/2.0 + FOV * (double)i / (double)windowHeight));
         RaycastResult ray = castRayDistance(a, position);
-        if (modeFishEye) fixFishEye(&ray.distance, a, toRadians(angle), windowHeight);
-        float lineHeight = (float)(RENDER_DISTANCE*CELL_SIZE) / ray.distance;
-        float shade = ray.distance * WALL_HEIGHT / (float)(RENDER_DISTANCE*CELL_SIZE);
+        fixFishEye(&ray.distance, a, toRadians(angle), windowHeight);
+        double lineHeight = (double)(RENDER_DISTANCE*CELL_SIZE) / ray.distance;
+        double shade = ray.distance * WALL_HEIGHT / (double)(RENDER_DISTANCE*CELL_SIZE);
         int color = 0x000000;
         if (getWallType(ray.wallType) > 0) {
             color = colors[getWallType(ray.wallType)];
@@ -144,9 +143,23 @@ void drawFrame(SDL_Renderer* renderer) {
         }
         int renderColor = blendColor(color,VERTICLE_SHADE_COLOR, (getWallSide(ray.wallType) ? VERTICLE_SHADE : 0));
         renderColor = blendColor(renderColor, fogColor, fmin(1, shade + 0.05F));
-        SDL_SetRenderDrawColor(renderer, getRed(renderColor), getGreen(renderColor), getBlue(renderColor), 255);
-        SDL_Rect rect = {windowWidth/2 - windowHeight/2 + i, windowHeight/2 - lineHeight/2, 1, lineHeight};
-        SDL_RenderDrawRect(renderer, &rect);
+        // simpletexturelagtest
+        for (int j = 0; j < 8; j++) {
+            if (j % 2 == 0) {
+                renderColor = blendColor(0,VERTICLE_SHADE_COLOR, (getWallSide(ray.wallType) ? VERTICLE_SHADE : 0));
+                renderColor = blendColor(renderColor, fogColor, fmin(1, shade + 0.05F));
+            }
+            else {
+                renderColor = blendColor(0xFFFFFF, VERTICLE_SHADE_COLOR, (getWallSide(ray.wallType) ? VERTICLE_SHADE : 0));
+                renderColor = blendColor(renderColor, fogColor, fmin(1, shade + 0.05F));
+            }
+            SDL_SetRenderDrawColor(renderer, getRed(renderColor), getGreen(renderColor), getBlue(renderColor), 255);
+            SDL_Rect rect = {windowWidth/2 - windowHeight/2 + i, windowHeight/2 - lineHeight/2 + j*lineHeight/8, 1, lineHeight/8};
+            SDL_RenderDrawRect(renderer, &rect);
+        }
+        // SDL_SetRenderDrawColor(renderer, getRed(renderColor), getGreen(renderColor), getBlue(renderColor), 255);
+        // SDL_Rect rect = {windowWidth/2 - windowHeight/2 + i, windowHeight/2 - lineHeight/2, 1, lineHeight};
+        // SDL_RenderDrawRect(renderer, &rect);
     }
 
     // draw black on both sides
@@ -156,7 +169,7 @@ void drawFrame(SDL_Renderer* renderer) {
     rect = (SDL_Rect){end, 0, windowWidth, windowHeight};
     SDL_RenderFillRect(renderer, &rect);
 }
-void movePlayer (float dt) {
+void movePlayer (double dt) {
     if (checkInput(SDL_SCANCODE_W)) {
         position.x += cos(toRadians(angle)) * playerSpeed * dt;
         position.y += sin(toRadians(angle)) * playerSpeed * dt;
@@ -183,6 +196,6 @@ void movePlayer (float dt) {
     }
 }
 
-float toRadians (float degrees) {
-    return degrees * PI / 180.0F;
+double toRadians (double degrees) {
+    return degrees * PI / 180.0;
 }

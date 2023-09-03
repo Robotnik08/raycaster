@@ -8,8 +8,8 @@ struct {
 } typedef Vector2Int;
 
 struct {
-    float x;
-    float y;
+    double x;
+    double y;
 } typedef Vector2;
 
 struct {
@@ -19,22 +19,22 @@ struct {
 } typedef Vector3Int;
 
 struct {
-    float x;
-    float y;
-    float z;
+    double x;
+    double y;
+    double z;
 } typedef Vector3;
 
 // forward declarations
 void normalize (Vector2 *v);
-float toAngle (Vector2 *v);
+double toAngle (Vector2 *v);
 
 // functions
 void normalize (Vector2 *v) {
-    float length = sqrt(v->x * v->x + v->y * v->y);
+    double length = sqrt(v->x * v->x + v->y * v->y);
     v->x /= length;
     v->y /= length;
 }
-float toAngle (Vector2 *v) {
+double toAngle (Vector2 *v) {
     return atan2(v->y, v->x);
 }
 

@@ -60,7 +60,6 @@ function borderMap() {
     }
     drawMap();
 }
-
 function convertToCarray () {
     let carray = 'int map[] = {\n\t';
     for (let i = 0; i < map.length; i++) {
@@ -69,7 +68,7 @@ function convertToCarray () {
             carray += '\n\t';
         }
     }
-    carray += `${mapWidth}, ${mapHeight}\n};`;
+    carray += `//mapsize\n\t${mapWidth}, ${mapHeight},\n\t//end\n\t 0x7FFFFFFF\n};`;
     //alert prompt
     document.getElementById('result').innerHTML = carray;
 }

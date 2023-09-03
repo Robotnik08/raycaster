@@ -19,13 +19,13 @@ int assembleColor (int r, int g, int b) {
 /// @return 
 int rainbow (int speed) {
     clock_t cur = clock();
-    float t = (float)cur / (float)CLOCKS_PER_SEC;
+    double t = (double)cur / (double)CLOCKS_PER_SEC;
     int r = (int)(sin(t * speed + 0) * 127 + 128);
     int g = (int)(sin(t * speed + 2) * 127 + 128);
     int b = (int)(sin(t * speed + 4) * 127 + 128);
     return assembleColor(r, g, b);
 }
-int blendColor (int c1, int c2, float amount) {
+int blendColor (int c1, int c2, double amount) {
     int r1 = getRed(c1);
     int g1 = getGreen(c1);
     int b1 = getBlue(c1);

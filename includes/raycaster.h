@@ -8,14 +8,14 @@
 
 // structs
 struct {
-    float distance;
+    double distance;
     int wallType;
 } typedef RaycastResult;
 
 // forward declarations
-RaycastResult castRayDistance (float a, Vector2 pos);
-void fixFishEye (float* distance, float rayAngle, float camAngle, int windowHeight);
-float correctAngle (float a);
+RaycastResult castRayDistance (double a, Vector2 pos);
+void fixFishEye (double* distance, double rayAngle, double camAngle, int windowHeight);
+double correctAngle (double a);
 int getWallType (int i);
 int getWallSide (int i);
 
@@ -24,25 +24,26 @@ int getWallSide (int i);
 
 // functions
 
-RaycastResult castRayDistance (float a, Vector2 pos) {
+
+RaycastResult castRayDistance (double a, Vector2 pos) {
     Vector2 mapSize = getMapSize();
     RaycastResult result;
-    float rayAngle = a;
+    double rayAngle = a;
     Vector2 rayPos = pos;
     Vector2 offset = {0, 0};
     int depth = 0;
 
     //horizontal
-    float angleTan = -1/tan(rayAngle);
-    float horizontalDistance = RENDER_DISTANCE*CELL_SIZE;
+    double angleTan = -1/tan(rayAngle);
+    double horizontalDistance = RENDER_DISTANCE*CELL_SIZE;
     int horizontalWallHit = 0;
     if (rayAngle > PI) {
-        rayPos.y = (((int)pos.y >> 6) << 6) - 0.0001F;
+        rayPos.y = (((int)pos.y >> 6) << 6) - EPSILON; // epsilon is to give a small offset to the ray so it hits the most front wall
         rayPos.x = (pos.y - rayPos.y) * angleTan + pos.x;
         offset.y = -64;
         offset.x = -offset.y * angleTan;
     } else if (rayAngle < PI) {
-        rayPos.y = (((int)pos.y >> 6) << 6) + 64;
+        rayPos.y = (((int)pos.y >> 6) << 6) + 64.0;
         rayPos.x = (pos.y - rayPos.y) * angleTan + pos.x;
         offset.y = 64;
         offset.x = -offset.y * angleTan;
@@ -73,16 +74,16 @@ RaycastResult castRayDistance (float a, Vector2 pos) {
     }
     //vertical
     depth = 0;
-    float verticalDistance = RENDER_DISTANCE*CELL_SIZE;
-    float negativeAngleTan = -tan(rayAngle);
+    double verticalDistance = RENDER_DISTANCE*CELL_SIZE;
+    double negativeAngleTan = -tan(rayAngle);
     int verticalWallHit = 0;
     if (rayAngle > HALF_PI && rayAngle < ONE_HALF_PI) {
-        rayPos.x = (((int)pos.x >> 6) << 6) - 0.0001F;
+        rayPos.x = (((int)pos.x >> 6) << 6) - EPSILON;
         rayPos.y = (pos.x - rayPos.x) * negativeAngleTan + pos.y;
         offset.x = -64;
         offset.y = -offset.x * negativeAngleTan;
     } else if (rayAngle < HALF_PI || rayAngle > ONE_HALF_PI) {
-        rayPos.x = (((int)pos.x >> 6) << 6) + 64;
+        rayPos.x = (((int)pos.x >> 6) << 6) + 64.0;
         rayPos.y = (pos.x - rayPos.x) * negativeAngleTan + pos.y;
         offset.x = 64;
         offset.y = -offset.x * negativeAngleTan;
@@ -121,15 +122,15 @@ RaycastResult castRayDistance (float a, Vector2 pos) {
     }
     return result;
 }
-void fixFishEye (float* distance, float rayAngle, float camAngle, int windowHeight) {
-    float combinedAngle = rayAngle - camAngle;
+void fixFishEye (double* distance, double rayAngle, double camAngle, int windowHeight) {
+    double combinedAngle = rayAngle - camAngle;
     if (combinedAngle < 0) combinedAngle += 2*PI;
     else if (combinedAngle > 2*PI) combinedAngle -= 2*PI;
-    *distance *= cos(combinedAngle)/(WALL_HEIGHT*(windowHeight/1000.0F));
+    *distance *= cos(combinedAngle)/(WALL_HEIGHT*(windowHeight/1000.0));
 }
 
 
-float correctAngle (float a) {
+double correctAngle (double a) {
     if (a > 360) {
         a -= 360;
     }
