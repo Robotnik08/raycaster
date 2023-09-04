@@ -18,7 +18,8 @@ void fixFishEye (double* distance, double rayAngle, double camAngle, int windowH
 double correctAngle (double a);
 int getWallType (int i);
 int getWallSide (int i);
-
+int getTextureX (int i);
+double toRadians (double degrees);
 
 
 
@@ -65,7 +66,12 @@ RaycastResult castRayDistance (double a, Vector2 pos) {
         if (c_map[mapIndex]) {
             horizontalDistance = sqrt(pow(pos.x - rayPos.x, 2) + pow(pos.y - rayPos.y, 2));
             horizontalDistance = fmin(horizontalDistance, RENDER_DISTANCE*CELL_SIZE);
+            // add 0 to wall type to indicate horizontal
             horizontalWallHit = c_map[mapIndex] << 1;
+            // add pixel offset for texture mapping (0 to 7)
+            horizontalWallHit <<= 3;
+            int textureX = (int)((rayPos.x/64 - (int)(rayPos.x/64))*8);
+            horizontalWallHit |= rayAngle < PI ? 7 - textureX : textureX;
             break;
         }
         rayPos.x += offset.x;
@@ -105,7 +111,12 @@ RaycastResult castRayDistance (double a, Vector2 pos) {
         if (c_map[mapIndex]) {
             verticalDistance = sqrt(pow(pos.x - rayPos.x, 2) + pow(pos.y - rayPos.y, 2));
             verticalDistance = fmin(verticalDistance, RENDER_DISTANCE*CELL_SIZE);
+            // add 1 to wall type to indicate vertical
             verticalWallHit = c_map[mapIndex] << 1 | 1;
+            // add pixel offset for texture mapping (0 to 7)
+            verticalWallHit <<= 3;
+            int textureX = (int)((rayPos.y/64 - (int)(rayPos.y/64))*8);
+            verticalWallHit |= rayAngle > HALF_PI && rayAngle < ONE_HALF_PI ? 7 - textureX : textureX;
             break;
         }
         rayPos.x += offset.x;
@@ -140,10 +151,18 @@ double correctAngle (double a) {
     return a;
 }
 int getWallType (int i) {
-    return i >> 1;
+    return i >> 4;
 }
 int getWallSide (int i) {
+    i >>= 3;
     return i & 1;
+}
+int getTextureX (int i) {
+    return i & 0b111;
+}
+
+double toRadians (double degrees) {
+    return degrees * PI / 180.0;
 }
 
 #endif

@@ -3,6 +3,36 @@
 
 #include <time.h>
 
+
+enum Colors {
+    BLACK = 0x000000,
+    WHITE = 0xFFFFFF,
+    RED = 0xFF0000,
+    GREEN = 0x00FF00,
+    BLUE = 0x0000FF,
+    YELLOW = 0xFFFF00,
+    CYAN = 0x00FFFF,
+    MAGENTA = 0xFF00FF,
+    ORANGE = 0xFF8000,
+    PURPLE = 0x8000FF,
+    PINK = 0xFF0080,
+    LIME = 0x80FF00,
+    TEAL = 0x008080,
+    LAVENDER = 0x800080,
+    BROWN = 0x804000,
+    MAROON = 0x800000,
+    OLIVE = 0x808000,
+    NAVY = 0x000080,
+    SKY = 0x0080FF,
+    TAN = 0x808040,
+    BEIGE = 0x808080,
+    GRAY = 0x404040,
+    DARK_GREEN = 0x008000,
+
+    RAINBOW = -1
+};
+
+
 int getRed (int c) {
     return (c >> 16) & 0xFF;
 }
