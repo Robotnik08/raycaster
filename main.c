@@ -23,7 +23,7 @@ Vector2Int windowSize = {0, 0};
 // forward declarations
 int QUIT (int code);
 
-int WinMain(int argc, char* argv[]) {
+int main(int argc, char* argv[]) {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) QUIT(1);
 
     window = SDL_CreateWindow("Slome 3D", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,1000, 1000, SDL_WINDOW_SHOWN);
@@ -33,9 +33,10 @@ int WinMain(int argc, char* argv[]) {
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (renderer == NULL) QUIT(1);
 
-    
+
     SDL_Event event;
     int quit = 0;
+
     //frameloop
     while (!quit) {
         SDL_GetWindowSize(window, &windowSize.x, &windowSize.y);
@@ -48,17 +49,20 @@ int WinMain(int argc, char* argv[]) {
                 setInput(&event);
             }
         }
+
+        // fullscreen
         if (checkInputDown(SDL_SCANCODE_F11)) {
             SDL_SetWindowFullscreen(window, SDL_GetWindowFlags(window) ^ SDL_WINDOW_FULLSCREEN_DESKTOP);
         }
+
         movePlayer();
         drawFrame(renderer,windowSize);
         inputRefresh();
         updateTime();
 
+        //set window title
         char* title = malloc(sizeof(char)*30);
         sprintf(title, "Slome 3d | %i FPS | X: %i | Y: %i", FPS, (int)position.x / CELL_SIZE, (int)position.y / CELL_SIZE);
-        //set window title
         SDL_SetWindowTitle(window, title);
         free(title);
     }
