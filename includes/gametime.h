@@ -1,7 +1,10 @@
+#ifndef GAMETIME_H
+#define GAMETIME_H
+
 #include <time.h>
 
-float deltaTime = 0.0F;
-float lastFrame = 0.0F;
+double deltaTime = 0.0;
+double lastFrame = 0.0;
 int framesThisSecond = 0;
 int FPS = 0;
 int lastFrameTimeSecond;
@@ -19,3 +22,5 @@ void updateTime()
         framesThisSecond = 0;
     }
 }
+
+#endif

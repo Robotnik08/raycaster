@@ -1,0 +1,70 @@
+.btn {
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 12px;
+    margin: 2px 2px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+.color {
+    width: 30px;
+    height: 30px;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 12px;
+    margin: 2px 2px;
+    cursor: pointer;
+    border-radius: 4px;
+    border: black 1px solid;
+}
+#toolbar {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+    background-color: #fff;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.25);
+    width: 95%;
+}
+#color-palette {
+    display: flex;
+}
+#color-palette > * {
+    flex: 1;
+}
+#map {
+    position: absolute;
+    top: 200px;
+    left: 20px;
+    width: 95%;
+    height: 70%;
+    background-color: #fff;
+    border: 1px solid #000;
+    border-radius: 10px;
+    overflow: scroll;
+}
+body {
+    background-color: #000;
+    margin: 0;
+    padding: 0;
+}
+.cell {
+    width: 30px;
+    height: 30px;
+    border: darkgray 2px solid;
+    background-color: #fff;
+}
+.row {
+    display: flex;
+}
