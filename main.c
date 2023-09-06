@@ -24,15 +24,13 @@ Vector2Int windowSize = {0, 0};
 int QUIT (int code);
 
 int main(int argc, char* argv[]) {
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) QUIT(1);
+    if (SDL_Init(SDL_INIT_VIDEO)) QUIT(1);
 
     window = SDL_CreateWindow("Slome 3D", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,1000, 1000, SDL_WINDOW_SHOWN);
-
     if (window == NULL) QUIT(1);
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (renderer == NULL) QUIT(1);
-
 
     SDL_Event event;
     int quit = 0;
